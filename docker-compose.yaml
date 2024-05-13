@@ -3,16 +3,23 @@ services:
   web:
     build: .
     ports:
-      - "3000:3000"
-      - "5050:5050"
+      - "80:8000"
     volumes:
       - .:/app
     depends_on:
-      - db
-  db:
-    image: mongo
+      mongodb:
+        condition: service_healthy
+  mongodb:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
     volumes:
       - db_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:
